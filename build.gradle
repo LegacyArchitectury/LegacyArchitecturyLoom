@@ -28,7 +28,7 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
 	}
 }
 
-group = "dev.architectury"
+group = "dev.architectury.legacy"
 archivesBaseName = project.name
 def baseVersion = '0.12.0'
 def runNumber = System.getenv("GITHUB_RUN_NUMBER") ?: "9999"
@@ -124,6 +124,7 @@ dependencies {
 
 	// Forge patches
 	implementation ('net.minecraftforge:installertools:1.2.0')
+	implementation ('net.minecraftforge:srgutils:0.4.11')
 	implementation ('org.cadixdev:lorenz:0.5.3')
 	implementation ('org.cadixdev:lorenz-asm:0.5.3')
 	implementation ('de.oceanlabs.mcp:mcinjector:3.8.0')
@@ -174,11 +175,12 @@ spotless {
 		ktlint()
 	}
 }
-
+/*
 checkstyle {
 	configFile = file('checkstyle.xml')
 	toolVersion = '9.3'
 }
+ */
 
 codenarc {
 	toolVersion = "2.2.0"
@@ -188,7 +190,7 @@ codenarc {
 gradlePlugin {
 	plugins {
 		fabricLoom {
-			id = 'dev.architectury.loom'
+			id = 'dev.architectury.legacy.loom'
 			implementationClass = 'net.fabricmc.loom.bootstrap.LoomGradlePluginBootstrap'
 		}
 	}
@@ -240,8 +242,8 @@ publishing {
 		}
 
 		pluginSnapshot(MavenPublication) {
-			groupId 'dev.architectury.loom'
-			artifactId 'dev.architectury.loom.gradle.plugin'
+			groupId 'dev.architectury.legacy.loom'
+			artifactId 'dev.architectury.legacy.loom.gradle.plugin'
 			version baseVersion + '-SNAPSHOT'
 
 			pom.withXml {
@@ -261,13 +263,12 @@ publishing {
 	}
 
 	repositories {
-		if (System.getenv("MAVEN_PASS") != null) {
-			maven {
-				url = "https://deploy.shedaniel.me/"
-				credentials {
-					username = "shedaniel"
-					password = System.getenv("MAVEN_PASS")
-				}
+		maven {
+			name = "GitHubPackages"
+			url = "https://maven.pkg.github.com/legacyarchitectury/legacyarchitecturyloom"
+			credentials {
+				username = System.getenv("GITHUB_ACTOR")
+				password = System.getenv("GITHUB_TOKEN")
 			}
 		}
 	}

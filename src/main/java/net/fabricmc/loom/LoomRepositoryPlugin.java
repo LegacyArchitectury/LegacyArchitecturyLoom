@@ -73,6 +73,12 @@ public class LoomRepositoryPlugin implements Plugin<PluginAware> {
 				content.includeGroup("dev.architectury");
 			});
 		});
+
+		repositories.maven(repo -> {
+			repo.setName("Quilt");
+			repo.setUrl(MirrorUtil.getQuiltRepository(target));
+		});
+
 		repositories.maven(repo -> {
 			repo.setName("Fabric");
 			repo.setUrl(MirrorUtil.getFabricRepository(target));
@@ -89,9 +95,10 @@ public class LoomRepositoryPlugin implements Plugin<PluginAware> {
 				sources.ignoreGradleMetadataRedirection();
 			});
 		});
+
 		repositories.maven(repo -> {
 			repo.setName("Forge");
-			repo.setUrl("https://maven.minecraftforge.net/");
+			repo.setUrl(MirrorUtil.getForgeRepository(target));
 
 			repo.content(descriptor -> {
 				descriptor.excludeGroupByRegex("org\\.eclipse\\.?.*");
@@ -100,8 +107,29 @@ public class LoomRepositoryPlugin implements Plugin<PluginAware> {
 			});
 			repo.metadataSources(sources -> {
 				sources.mavenPom();
+				sources.artifact();
 				sources.ignoreGradleMetadataRedirection();
 			});
+		});
+
+		/* COMING SOON!
+		repositories.maven(repo -> {
+			repo.setName("LegacyArchitectury");
+			repo.setUrl("https://maven.architectury.dev/");
+			repo.mavenContent(content -> {
+				content.includeGroup("dev.architectury.legacy");
+			});
+		});
+ 		*/
+
+		repositories.maven(repo -> {
+			repo.setName("Ornithe");
+			repo.setUrl(MirrorUtil.getOrnitheRepository(target));
+		});
+
+		repositories.maven(repo -> {
+			repo.setName("LegacyFabric");
+			repo.setUrl(MirrorUtil.getLegacyFabricRepository(target));
 		});
 
 		// If a mavenCentral repo is already defined, remove the mojang repo and add it back before the mavenCentral repo so that it will be checked first.

@@ -71,7 +71,7 @@ public class LoomGradlePlugin implements BootstrappedPlugin {
 		if (!loggedVersions.contains(LOOM_VERSION)) {
 			loggedVersions.add(LOOM_VERSION);
 			System.setProperty("loom.printed.logged", String.join(",", loggedVersions));
-			project.getLogger().lifecycle("Architectury Loom: " + LOOM_VERSION);
+			project.getLogger().lifecycle("Lgeacy Architectury Loom: " + LOOM_VERSION);
 		}
 
 		LibraryLocationLogger.logLibraryVersions();

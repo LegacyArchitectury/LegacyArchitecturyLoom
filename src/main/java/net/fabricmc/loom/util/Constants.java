@@ -35,13 +35,16 @@ import net.fabricmc.loom.configuration.RemappedConfigurationEntry;
 import net.fabricmc.loom.configuration.RemappedConfigurationEntry.PublishingMode;
 
 public class Constants {
-	public static final String PLUGIN_ID = "dev.architectury.loom";
+	public static final String PLUGIN_ID = "dev.architectury.legacy.loom";
 	public static final String LIBRARIES_BASE = "https://libraries.minecraft.net/";
 	public static final String RESOURCES_BASE = "https://resources.download.minecraft.net/";
 	public static final String VERSION_MANIFESTS = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
 	public static final String EXPERIMENTAL_VERSIONS = "https://maven.fabricmc.net/net/minecraft/experimental_versions.json";
 	public static final String FABRIC_REPOSITORY = "https://maven.fabricmc.net/";
-
+	public static final String QUILT_REPOSITORY = "https://maven.quiltmc.org/repository/release/";
+	public static final String FORGE_REPOSITORY = "https://maven.minecraftforge.net/";
+	public static final String ORINTHE_REPOSITORY = "https://maven.ornithemc.net/releases/";
+	public static final String LEGACY_FABRIC_REPOSITORY = "https://repo.legacyfabric.net/repository/";
 	public static final int ASM_VERSION = Opcodes.ASM9;
 	public static final String MERCURY_SOURCE_VERSION = JavaCore.VERSION_15;
 	// TODO: once we update Mercury: public static final String MERCURY_SOURCE_VERSION = JavaCore.VERSION_17;
@@ -134,6 +137,8 @@ public class Constants {
 		public static final String UNPROTECT = "io.github.juuxel:unprotect:";
 		// Used to upgrade the ASM version for the AT tool.
 		public static final String ASM = "org.ow2.asm:asm:";
+		// Forge versions with the `notchObf` version enabled in their userdev config(typically < 1.13) require an extra remapping step that uses this.
+		public static final String SPECIAL_SOURCE = "net.md-5:SpecialSource:1.10.0:shaded";
 
 		private Dependencies() {
 		}

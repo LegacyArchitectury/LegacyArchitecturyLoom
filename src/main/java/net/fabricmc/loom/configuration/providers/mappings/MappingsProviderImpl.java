@@ -25,6 +25,7 @@
 package net.fabricmc.loom.configuration.providers.mappings;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
 import java.io.Reader;
@@ -48,6 +49,12 @@ import java.util.function.Supplier;
 import com.google.common.base.Stopwatch;
 import com.google.common.base.Suppliers;
 import com.google.gson.JsonObject;
+
+import net.fabricmc.loom.api.mappings.layered.MappingsNamespace;
+import net.fabricmc.loom.configuration.providers.mappings.mojmap.MojangMappingsSpec;
+import net.fabricmc.loom.configuration.providers.minecraft.MinecraftVersionMeta;
+import net.fabricmc.mappingio.tree.MappingTreeView;
+
 import org.apache.tools.ant.util.StringUtils;
 import org.gradle.api.Project;
 import org.gradle.api.artifacts.Configuration;
@@ -97,6 +104,7 @@ public class MappingsProviderImpl implements MappingsProvider, SharedService {
 	public Path tinyMappingsWithSrg;
 	public final Map<String, Path> mixinTinyMappings; // The mixin mappings have other names in intermediary.
 	public final Path srgToNamedSrg; // FORGE: srg to named in srg file format
+	private final Path mcpToSrg;
 	private final Path unpickDefinitions;
 
 	private boolean hasUnpickDefinitions;
@@ -116,6 +124,7 @@ public class MappingsProviderImpl implements MappingsProvider, SharedService {
 		this.tinyMappingsWithSrg = mappingsWorkingDir.resolve("mappings-srg.tiny");
 		this.mixinTinyMappings = new HashMap<>();
 		this.srgToNamedSrg = mappingsWorkingDir.resolve("mappings-srg-named.srg");
+		this.mcpToSrg = mappingsWorkingDir.resolve("mcp_to_srg.srg");
 
 		this.intermediaryService = intermediaryService;
 	}
@@ -142,6 +151,71 @@ public class MappingsProviderImpl implements MappingsProvider, SharedService {
 
 	public MemoryMappingTree getMappingsWithSrg() throws IOException {
 		return Objects.requireNonNull(mappingTreeWithSrg, "Cannot get mappings before they have been read").get();
+	}
+
+	public Path getMcpToSrg() {
+		if (Files.notExists(mcpToSrg)) {
+			// Forge outputs a srg file that includes class names, even if they match srg(which they would if using mcp mappings)
+			// So we try to get as close to that by adding the class mappings even if they don't change.
+			// This can't use SrgWriter either, as that doesn't add unmapped class mappings.
+			try (BufferedWriter writer = Files.newBufferedWriter(mcpToSrg)) {
+				MappingTreeView mappings = getMappingsWithSrg();
+
+				int sourceNamespace = mappings.getNamespaceId(MappingsNamespace.SRG.toString());
+				int targetNamespace = mappings.getNamespaceId(MappingsNamespace.NAMED.toString());
+
+				for (MappingTreeView.ClassMappingView classMapping : mappings.getClasses()) {
+					String srg = classMapping.getName(sourceNamespace);
+					String named = classMapping.getName(targetNamespace);
+
+					writer.write("CL: ");
+					writer.write(srg);
+					writer.write(' ');
+					writer.write(named);
+					writer.write('\n');
+
+					for (MappingTreeView.FieldMappingView fieldMapping : classMapping.getFields()) {
+						writer.write("FD: ");
+
+						writer.write(srg);
+						writer.write('/');
+						writer.write(fieldMapping.getName(sourceNamespace));
+
+						writer.write(' ');
+
+						writer.write(named);
+						writer.write('/');
+						writer.write(fieldMapping.getName(targetNamespace));
+
+						writer.write('\n');
+					}
+
+					for (MappingTreeView.MethodMappingView methodMapping : classMapping.getMethods()) {
+						writer.write("MD: ");
+
+						writer.write(srg);
+						writer.write('/');
+						writer.write(methodMapping.getName(sourceNamespace));
+						writer.write(' ');
+						writer.write(methodMapping.getDesc(sourceNamespace));
+
+						writer.write(' ');
+
+						writer.write(named);
+						writer.write('/');
+						writer.write(methodMapping.getName(targetNamespace));
+						writer.write(' ');
+						writer.write(methodMapping.getDesc(targetNamespace));
+
+						writer.write('\n');
+					}
+				}
+			} catch (IOException exception) {
+				throw new UncheckedIOException("Failed to create SRG file for the mcp_to_srg template argument", exception);
+			}
+		}
+
+		return mcpToSrg;
 	}
 
 	private static MappingsProviderImpl create(Project project, DependencyInfo dependency, MinecraftProvider minecraftProvider, Supplier<IntermediateMappingsService> intermediaryService) {
@@ -216,15 +290,27 @@ public class MappingsProviderImpl implements MappingsProvider, SharedService {
 
 		if (extension.shouldGenerateSrgTiny()) {
 			if (Files.notExists(tinyMappingsWithSrg) || isRefreshDeps()) {
-				// Merge tiny mappings with srg
 				Stopwatch stopwatch = Stopwatch.createStarted();
-				SrgMerger.ExtraMappings extraMappings = SrgMerger.ExtraMappings.ofMojmapTsrg(getMojmapSrgFileIfPossible(project));
-				SrgMerger.mergeSrg(getRawSrgFile(project), tinyMappings, tinyMappingsWithSrg, extraMappings, true);
+				mergeSrg(project, tinyMappings, tinyMappingsWithSrg);
 				project.getLogger().info(":merged srg mappings in " + stopwatch.stop());
 			}
 
 			mappingTreeWithSrg = Suppliers.memoize(() -> readMappings(tinyMappingsWithSrg));
 		}
+	}
+
+	protected void mergeSrg(Project project, Path tinyMappings, Path tinyMappingsWithSrg) throws IOException {
+		MinecraftVersionMeta versionInfo = LoomGradleExtension.get(project).getMinecraftProvider().getVersionInfo();
+		SrgMerger.ExtraMappings extraMappings;
+
+		if (versionInfo.download(MojangMappingsSpec.MANIFEST_CLIENT_MAPPINGS) == null) {
+			extraMappings = null;
+		} else {
+			extraMappings = SrgMerger.ExtraMappings.ofMojmapTsrg(getMojmapSrgFileIfPossible(project));
+		}
+
+		// Merge tiny mappings with srg
+		SrgMerger.mergeSrg(getRawSrgFile(project), tinyMappings, tinyMappingsWithSrg, extraMappings, true);
 	}
 
 	public void applyToProject(Project project, DependencyInfo dependency) throws IOException {
@@ -461,8 +547,8 @@ public class MappingsProviderImpl implements MappingsProvider, SharedService {
 	private void suggestFieldNames(MergedMinecraftProvider minecraftProvider, Path oldMappings, Path newMappings) {
 		Command command = new CommandProposeFieldNames();
 		runCommand(command, minecraftProvider.getMergedJar().toFile().getAbsolutePath(),
-						oldMappings.toAbsolutePath().toString(),
-						newMappings.toAbsolutePath().toString());
+				oldMappings.toAbsolutePath().toString(),
+				newMappings.toAbsolutePath().toString());
 	}
 
 	private void runCommand(Command command, String... args) {

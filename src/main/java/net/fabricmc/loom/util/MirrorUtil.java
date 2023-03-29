@@ -66,4 +66,36 @@ public class MirrorUtil {
 
 		return Constants.FABRIC_REPOSITORY;
 	}
+
+	public static String getQuiltRepository(ExtensionAware aware) {
+		if (aware.getExtensions().getExtraProperties().has("loom_quilt_repository")) {
+			return String.valueOf(aware.getExtensions().getExtraProperties().get("loom_quilt_repository"));
+		}
+
+		return Constants.QUILT_REPOSITORY;
+	}
+
+	public static String getForgeRepository(ExtensionAware aware) {
+		if (aware.getExtensions().getExtraProperties().has("loom_forge_repository")) {
+			return String.valueOf(aware.getExtensions().getExtraProperties().get("loom_forge_repository"));
+		}
+
+		return Constants.FORGE_REPOSITORY;
+	}
+
+	public static String getOrnitheRepository(ExtensionAware aware) {
+		if (aware.getExtensions().getExtraProperties().has("loom_ornithe_repository")) {
+			return String.valueOf(aware.getExtensions().getExtraProperties().get("loom_ornithe_repository"));
+		}
+
+		return Constants.ORINTHE_REPOSITORY;
+	}
+
+	public static String getLegacyFabricRepository(ExtensionAware aware) {
+		if (aware.getExtensions().getExtraProperties().has("loom_legacy_fabric_repository")) {
+			return String.valueOf(aware.getExtensions().getExtraProperties().get("loom_legacy_fabric_repository"));
+		}
+
+		return Constants.LEGACY_FABRIC_REPOSITORY;
+	}
 }

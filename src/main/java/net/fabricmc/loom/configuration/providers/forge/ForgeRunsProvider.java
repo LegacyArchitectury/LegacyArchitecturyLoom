@@ -56,6 +56,8 @@ public class ForgeRunsProvider {
 	private final LoomGradleExtension extension;
 	private final JsonObject json;
 
+	private final DependencyProvider dependencyProvider;
+
 	public ForgeRunsProvider(Project project, JsonObject json) {
 		this.project = project;
 		this.extension = LoomGradleExtension.get(project);
@@ -185,6 +187,8 @@ public class ForgeRunsProvider {
 						.collect(Collectors.joining(File.pathSeparator));
 			} else if (key.equals("mcp_mappings")) {
 				string = "loom.stub";
+			} else if (key.equals("mcp_to_srg")) {
+				string = dependencyProvider.getExtension().getMappingsProvider().getMcpToSrg().toAbsolutePath().toString();
 			} else if (json.has(key)) {
 				JsonElement element = json.get(key);
 

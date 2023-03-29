@@ -1,2 +1,2 @@
-rootProject.name = "architectury-loom"
+rootProject.name = "legacy-architectury-loom"
 include "bootstrap"

@@ -32,11 +32,19 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+
+import net.fabricmc.loom.util.FileSystemUtil;
+
 import org.gradle.api.Project;
 
 import net.fabricmc.loom.LoomGradlePlugin;
@@ -45,8 +53,11 @@ import net.fabricmc.loom.util.Constants;
 import net.fabricmc.loom.util.ZipUtils;
 
 public class ForgeUserdevProvider extends DependencyProvider {
+	private List<Pattern> filters;
 	private File userdevJar;
 	private JsonObject json;
+	private Path accessTransformerConfig;
+	private boolean notchObfPatches;
 	Path joinedPatches;
 	BinaryPatcherConfig binaryPatcherConfig;
 
@@ -77,11 +88,43 @@ public class ForgeUserdevProvider extends DependencyProvider {
 		addDependency(json.get("mcp").getAsString(), Constants.Configurations.SRG);
 		addDependency(json.get("universal").getAsString(), Constants.Configurations.FORGE_UNIVERSAL);
 
+		if (json.has("universalFilters")) {
+			filters = new ArrayList<>();
+
+			for (JsonElement element : json.getAsJsonArray("universalFilters")) {
+				filters.add(Pattern.compile(element.getAsString()));
+			}
+		}
+
+		accessTransformerConfig = getExtension().getForgeProvider().getGlobalCache().toPath().resolve("at-conf.cfg");
+
+		if (Files.notExists(accessTransformerConfig)) {
+			try (FileSystemUtil.Delegate fs = FileSystemUtil.getJarFileSystem(userdevJar.toPath(), false)) {
+				for (JsonElement element : json.getAsJsonArray("ats")) {
+					Files.write(accessTransformerConfig, fs.readAllBytes(element.getAsString()), StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.APPEND);
+				}
+			}
+		}
+
+		notchObfPatches = json.has("notchObf") && json.getAsJsonPrimitive("notchObf").getAsBoolean();
+
 		if (Files.notExists(joinedPatches)) {
 			Files.write(joinedPatches, ZipUtils.unpack(userdevJar.toPath(), json.get("binpatches").getAsString()));
 		}
 
 		binaryPatcherConfig = BinaryPatcherConfig.fromJson(json.getAsJsonObject("binpatcher"));
+	}
+
+	public Path getAccessTransformerConfig() {
+		return accessTransformerConfig;
+	}
+
+	public boolean isNotchObfPatches() {
+		return notchObfPatches;
+	}
+
+	public List<Pattern> getUniversalFilters() {
+		return filters == null ? Collections.emptyList() : filters;
 	}
 
 	public File getUserdevJar() {
