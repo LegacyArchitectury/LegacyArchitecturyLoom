@@ -55,19 +55,19 @@ public class ForgeRunsProvider {
 	private final Project project;
 	private final LoomGradleExtension extension;
 	private final JsonObject json;
+	private static DependencyProvider dependencyProvider;
 
-	private final DependencyProvider dependencyProvider;
-
-	public ForgeRunsProvider(Project project, JsonObject json) {
+	public ForgeRunsProvider(Project project, JsonObject json, DependencyProvider dependencyProvider) {
 		this.project = project;
 		this.extension = LoomGradleExtension.get(project);
 		this.json = json;
+		ForgeRunsProvider.dependencyProvider = dependencyProvider;
 	}
 
 	public static void provide(Project project) {
 		LoomGradleExtension extension = LoomGradleExtension.get(project);
 		JsonObject json = extension.getForgeUserdevProvider().getJson();
-		ForgeRunsProvider provider = new ForgeRunsProvider(project, json);
+		ForgeRunsProvider provider = new ForgeRunsProvider(project, json, dependencyProvider);
 
 		for (Map.Entry<String, JsonElement> entry : json.getAsJsonObject("runs").entrySet()) {
 			LaunchProviderSettings launchSettings = extension.getLaunchConfigs().findByName(entry.getKey());
