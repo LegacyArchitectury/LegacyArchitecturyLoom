@@ -38,8 +38,6 @@ import org.jetbrains.annotations.ApiStatus;
  * Data for a mod built from project files in a dev environment.
  * This data is only used for run config generation (FML needs the paths to mod files).
  */
-@Deprecated(forRemoval = true, since = "0.12.0")
-@ApiStatus.ScheduledForRemoval(inVersion = "1.0")
 public class ForgeLocalMod implements Named {
 	private final Project project;
 	private final String name;
