@@ -1,5 +1,5 @@
 plugins {
-	id 'dev.architectury.loom'
+	id 'dev.architectury.legacy.loom'
 	id 'maven-publish'
 }
 
@@ -20,6 +20,9 @@ loom {
 		clientOnlyMinecraftJar()
 	} else {
 		serverOnlyMinecraftJar()
+	}
+	forge {
+		pack200Provider = new dev.architectury.pack200.java.Pack200Adapter()
 	}
 }
 

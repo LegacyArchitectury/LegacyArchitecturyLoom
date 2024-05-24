@@ -2,7 +2,7 @@ import groovy.json.JsonSlurper
 
 plugins {
 	id "java"
-	id 'dev.architectury.loom' apply false
+	id 'dev.architectury.legacy.loom' apply false
 }
 
 allprojects {

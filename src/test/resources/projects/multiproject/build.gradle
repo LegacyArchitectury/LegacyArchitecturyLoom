@@ -1,7 +1,7 @@
 plugins {
 	id "java"
 	id "java-library"
-	id 'dev.architectury.loom' apply false
+	id 'dev.architectury.legacy.loom' apply false
 }
 
 allprojects {

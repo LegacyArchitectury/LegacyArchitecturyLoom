@@ -51,6 +51,10 @@ public class McpConfigProvider extends DependencyProvider {
 
 	@Override
 	public void provide(DependencyInfo dependency) throws Exception {
+		if (getExtension().isLegacyForge()) {
+			return;
+		}
+
 		init(dependency.getDependency().getVersion());
 
 		Path mcpZip = dependency.resolveFile().orElseThrow(() -> new RuntimeException("Could not resolve MCPConfig")).toPath();
@@ -96,7 +100,7 @@ public class McpConfigProvider extends DependencyProvider {
 	}
 
 	public boolean isOfficial() {
-		return data.official();
+		return getExtension().isLegacyForge() || data.official();
 	}
 
 	public String getMappingsPath() {

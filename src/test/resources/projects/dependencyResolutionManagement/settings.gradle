@@ -1,11 +1,11 @@
 pluginManagement {
 	plugins {
-		id 'dev.architectury.loom'
+		id 'dev.architectury.legacy.loom'
 	}
 }
 
 plugins {
-	id 'dev.architectury.loom'
+	id 'dev.architectury.legacy.loom'
 }
 
 dependencyResolutionManagement {

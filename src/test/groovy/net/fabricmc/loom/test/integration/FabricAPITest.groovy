@@ -54,8 +54,8 @@ class FabricAPITest extends Specification implements GradleProjectTestTrait {
 
 		// Set the version to something constant
 		gradle.buildGradle.text = gradle.buildGradle.text.replace('project.version + "+" + (ENV.GITHUB_RUN_NUMBER ? "" : "local-") + getBranch()', "\"$API_VERSION\"")
-				.replace('id "fabric-loom" version "0.9.50"', 'id "dev.architectury.loom"')
-				.replace('"fabric-loom"', '"dev.architectury.loom"')
+				.replace('id "fabric-loom" version "0.9.50"', 'id "dev.architectury.legacy.loom"')
+				.replace('"fabric-loom"', '"dev.architectury.legacy.loom"')
 
 		def server = ServerRunner.create(gradle.projectDir, "1.19.4")
 				.withMod(gradle.getOutputFile("fabric-api-${API_VERSION}.jar"))
