@@ -18,6 +18,8 @@ jobs:
           java-version: 17
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+      - name: Upload to Local Maven
+        run: ./gradlew publish --stacktrace
       - name: Upload artifacts (Pre-Publish)
         uses: actions/upload-artifact@v4
         with:
