@@ -288,14 +288,9 @@ publishing {
 	}
 
 	repositories {
-		if (ENV.MAVEN_PASS != null) {
-			maven {
-				url = "https://deploy.shedaniel.me/"
-				credentials {
-					username = "shedaniel"
-					password = ENV.MAVEN_PASS
-				}
-			}
+		maven {
+			name = "GitHubPackages"
+			url = "file://${project.buildDir}/repo"
 		}
 	}
 }

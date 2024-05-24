@@ -3,15 +3,6 @@ name: Java CI
 on:
   push:
     branches:
-      - 'dev/0.6-forge'
-      - 'dev/0.7-forge'
-      - 'dev/0.8'
-      - 'dev/0.9'
-      - 'dev/0.10.0'
-      - 'dev/0.11.0'
-      - 'dev/0.12.0'
-      - 'dev/1.0'
-      - 'dev/1.1'
       - 'dev/1.2'
 
 jobs:
@@ -20,12 +11,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v4
       - name: Set up JDK 17
-        uses: actions/setup-java@v1
+        uses: actions/setup-java@v4
         with:
           java-version: 17
-      - name: Upload to Maven
-        run: ./gradlew publish --stacktrace
-        env:
-          MAVEN_PASS: ${{ secrets.MAVEN_PASS }}
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+      - name: Upload artifacts (Pre-Publish)
+        uses: actions/upload-artifact@v4
+        with:
+          name: pre-publish
+          path: ${{ github.workspace }}/build/repo
