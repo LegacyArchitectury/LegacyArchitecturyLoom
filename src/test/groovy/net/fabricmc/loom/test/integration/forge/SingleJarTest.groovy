@@ -55,9 +55,7 @@ class SingleJarTest extends Specification implements GradleProjectTestTrait {
 		[
 			['1.19.4', "45.0.43"],
 			['1.18.1', "39.0.63"],
-			['1.17.1', "37.0.67"],
-//			['1.12.2', "14.23.0.2486"], // MOJMAP
-//			['1.8.9', '11.14.4.1563']
+			['1.17.1', "37.0.67"]
 		],
 		['client', 'server'],
 		STANDARD_TEST_VERSIONS
